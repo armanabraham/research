@@ -1,2 +1,3 @@
-Repository of data and source code to reproduce the results of published and unpublished experiments. 
+Repository 
 ========
+ Contains data and source code to reproduce the analysis and figures of published and unpublished results from my experiments.  
