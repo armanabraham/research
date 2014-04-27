@@ -1,3 +1,3 @@
 TMS enhances perception
 =================
-Data and source code in R to reproduce the results reported in the manuscript titled, "Low intensity TMS enhances perception of visual stimuli".
+Experiment data and R source code to reproduce the results reported in the manuscript, "Low intensity TMS enhances perception of visual stimuli".
