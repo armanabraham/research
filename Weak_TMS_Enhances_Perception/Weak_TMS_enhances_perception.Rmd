@@ -1,0 +1,47 @@
+---
+title: 'Running head: Weak TMS enhances perception'
+date: "15 September 2014"
+author: ""
+output:
+  html_document:
+    theme: cerulean
+    toc: yes
+---
+
+# Description
+Individual subject data and R code to reproduce results and figures reported in "Low intensity TMS enhances perception of visual stimuli" by Arman Abrahamyan, Colin Clifford, Ehsan Arabzadeh and Justin Harris. 
+
+```{r echo=FALSE, message=FALSE}
+library(ggplot2)
+library(ggthemes)
+## Load Winston Chan's function to compute within-subjects error bars
+source('~/Desktop/Dropbox/R/Lib/StandardErrorsByWinstonChan.R')
+setwd("~/Desktop/Dropbox/Work/USyd/Experiments/OrientationDiscrimination_LowTMS/OrientationExp_DataAnalysis_R/")
+
+# Load data and display loaded variable
+load("Exp1_Exp2.RData", verbose=T)
+
+```
+
+
+Arman Abrahamyan1,2, Colin W. G. Clifford1, 3, Ehsan Arabzadeh1, 4,
+and Justin A. Harris1
+
+
+Low intensity TMS enhances perception of visual stimuli
+Data 
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+summary(cars)
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
