@@ -1,0 +1,41 @@
+---
+title: 'Table of Contents'
+date: ""
+author: ""
+output:
+  html_document:
+    theme: cerulean
+    toc: yes
+---
+
+### Description
+Individual subject data and R code to reproduce data analysis and figures reported in "Low intensity TMS enhances perception of visual stimuli" by Arman Abrahamyan, Colin Clifford, Ehsan Arabzadeh and Justin Harris. 
+
+```{r echo=FALSE, message=FALSE}
+library(ggplot2)
+library(ggthemes)
+## Load Winston Chan's function to compute within-subjects error bars
+source('~/Desktop/Dropbox/R/Lib/StandardErrorsByWinstonChan.R')
+setwd("~/Desktop/Dropbox/Work/USyd/Experiments/OrientationDiscrimination_LowTMS/OrientationExp_DataAnalysis_R/")
+
+# Load data and display loaded variable
+load("Exp1_Exp2.RData", verbose=T)
+#head(Exp1_Exp2)
+# Compute visual sensitivity, which is reciprocal of contrast threshold
+exp1_data <- ddply(exp1_data, .(PPT, Date, Condition), transform, Sensitivity=1/Th)
+exp2_data <- ddply(exp2_data, .(PPT, Date, Condition), transform, Sensitivity=1/Th)
+```
+
+
+
+```{r}
+summary(cars)
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
