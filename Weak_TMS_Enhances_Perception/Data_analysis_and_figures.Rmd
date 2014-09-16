@@ -47,7 +47,7 @@ Here we test if visual sensitivity changes as a function of TMS stimulation inte
 ```{r, echo=FALSE}
 ################## --- Data analysis of Experiment 1 --- ###################
 # Order Conditions for plotting convenience
-#exp1_dataMean$Condition <- factor(exp1_dataMean$Condition, levels=c("NoTMS", "ip80", "ip90", "60", "70", "80", "90", "100"))
+exp1_dataMean$Condition <- factor(exp1_dataMean$Condition, levels=c("NoTMS", "ip80", "ip90", "60", "70", "80", "90", "100"))
 
 # Find out if there is a quadratic trend in the data as a function of TMS intensity
 # Select only experimental conditions (exclude NoTMS and ipsilatoral stimulation)
@@ -65,9 +65,9 @@ anova(baseline, linear, quadratic, cubic)
 ```
 
 #### Plot average data (Figure 1A) 
-This corresponds to Figure 1A in the manuscript. 
+This corresponds to Figure 1A in the manuscript. The dashed line shows quadratic trend in the data. 
 
-```{r, echo=FALSE, fig.width=6, fig.height=4.5, dev='png'}
+```{r, echo=FALSE, fig.width=6, fig.height=4.5, dev='pdf'}
 # Compute high-res quadratic trend for the plot
 # Summarise data for plotting
 fitX <- data.frame(CondAsNum=seq(60,100, 0.1))
@@ -88,7 +88,6 @@ exp1_dataForPlot <- droplevels(exp1_dataForPlot[,c("PPT", "CoilPosition", "Inten
 exp1_qFitForPlot <- summarySEwithin(exp1_dataForPlot, measurevar="Sensitivity", withinvars=c("Intensity", "CoilPosition"), idvar="PPT")
 gExp1_SensTrend <- ggplot(exp1_qFitForPlot, aes(x=as.numeric(as.character(Intensity)), y=Sensitivity, color=CoilPosition)) + 
   theme_few() + 
-  geom_rangeframe(color="grey30") + 
   theme(legend.position=c(0.19,0.87)) + 
   xlab("Stimulation intensity\n (% phosphene threshold)") + 
   ylab("Contrast sensitivity") + 
@@ -102,4 +101,22 @@ gExp1_SensTrend <- ggplot(exp1_qFitForPlot, aes(x=as.numeric(as.character(Intens
 print(gExp1_SensTrend)
 ```
 
+#### Plot individual data
+Same as the above but plotted by subject. For clarity, y-axis is scaled individually. 
 
+```{r, echo=FALSE, fig.width=10, fig.height=7, dev='pdf'}
+exp1_dataForPlot$Intensity <- factor(exp1_dataForPlot$Intensity, levels=c("60", "70", "80", "90", "100"))
+ggplot(exp1_dataForPlot, aes(x=Intensity, y=Sensitivity, shape=CoilPosition)) + 
+  theme_few() + 
+  theme(legend.position=c(0.87,0.2)) + 
+  xlab("Stimulation intensity\n (% phosphene threshold)") + 
+  ylab("Contrast sensitivity") + 
+  geom_line(aes(group=CoilPosition), color="grey50") + 
+  geom_blank() + 
+  scale_color_brewer(palette="Spectral") +
+  facet_wrap(~PPT, scales="free") + 
+  geom_point(size=6, color="white", shape=19) +
+  geom_point(size=3, color="grey20") + 
+  scale_shape_manual(values=c(1,19), name="Coil position", labels=c("Control (Ipsi)","Experimental (Contra)"))
+
+```
