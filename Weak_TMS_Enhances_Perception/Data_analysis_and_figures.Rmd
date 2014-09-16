@@ -39,7 +39,8 @@ head(exp2_dataMean, 4)
 
 ### Data analysis of Experiment 1
 #### Quadratic trend in data 
-Here we test if visual sensitivity changes as a function of TMS stimulation intensity. Due to repeated-measures design, we conducted mixed-modelling analysis wherein subject was a random effect and TMS stimulation intensity was fixed effect. We fitted linear, cubic and quadratic models to the data and found that quadratic trend explains data better than linear or cubic fits (𝜒2(1)=5.22, p=0.022). 
+Here we test if visual sensitivity changes as a function of TMS stimulation intensity. Due to repeated-measures design, we conducted mixed-modelling analysis wherein subject was a random effect and TMS stimulation intensity was fixed effect. We fitted linear, cubic and quadratic models to the data and found that quadratic fit explains data better than linear or cubic fits ($\chi^2$(1)=5.22, *p*=0.022).
+
 ```{r, echo=FALSE}
 ################## --- Data analysis of Experiment 1 --- ###################
 # Order Conditions for plotting convenience
@@ -53,15 +54,17 @@ baseline <- lme(data=exp1_quadraticFitData, Sensitivity~1, random=~1|PPT/CondAsN
 linear <- update(baseline, .~. + CondAsNum)
 quadratic <- update(baseline, .~. + CondAsNum + I(CondAsNum^2))
 cubic <- update(baseline, .~. + CondAsNum + I(CondAsNum^2)+ I(CondAsNum^3))
-anova(baseline, linear, quadratic, cubic)
 
 ```
 
+```{r}
+anova(baseline, linear, quadratic, cubic)
+```
 
-#### Plotting change in visual sensitivity as a function of TMS intensity as well as sensitivty during control conditions
-This plot corresponds to Figure 1A in manuscript. 
+#### Plot average data (Figure 1A) 
+This corresponds to Figure 1A in the manuscript. 
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, fig.width=6, fig.height=4.5, dev='png'}
 # Compute high-res quadratic trend for the plot
 # Summarise data for plotting
 fitX <- data.frame(CondAsNum=seq(60,100, 0.1))
@@ -83,21 +86,15 @@ exp1_qFitForPlot <- summarySEwithin(exp1_dataForPlot, measurevar="Sensitivity", 
 gExp1_SensTrend <- ggplot(exp1_qFitForPlot, aes(x=as.numeric(as.character(Intensity)), y=Sensitivity, color=CoilPosition)) + 
   theme_few() + 
   geom_rangeframe(color="grey30") + 
-  theme(legend.position="none") + 
+  theme(legend.position=c(0.19,0.87)) + 
   xlab("Stimulation intensity\n (% phosphene threshold)") + 
   ylab("Contrast sensitivity") + 
-  #theme(plot.background = element_rect(fill = "transparent",colour = NA)) + 
-  #theme(panel.background = element_rect(fill = "transparent",colour = NA)) + 
-  #theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border=element_blank()) + 
-  #theme(panel.grid=element_blank(), panel.border=element_blank()) +
-  #theme(axis.line = element_line(colour="grey30", size=0.3)) +
-  #theme(axis.title.x = element_text(vjust=-0.3), axis.title.y = element_text(vjust=0.3)) + 
   geom_line(data=predVals, aes(x=x, y=y), linetype="dashed", colour="grey70", size=.3) +
   geom_line(subset=.(CoilPosition=="Expt"), aes(group=1), color="grey50", size=1) + 
   geom_errorbar(aes(ymin = Sensitivity - se, ymax = Sensitivity + se), width = 0.00, size = 0.2, color="grey50") +   # Change "se" to "ci" to plot 95% conf intervals
   geom_point(size=7, color="white") +
   geom_point(aes(shape=CoilPosition), size=4, color="grey20") + 
-  scale_shape_manual(values=c(1,19,2), name="Coil\nposition")
+  scale_shape_manual(values=c(1,19), name="Coil position", labels=c("Control (Ipsi)","Experimental (Contra)"))
 
 print(gExp1_SensTrend)
 ```
