@@ -115,8 +115,8 @@ ggplot(exp1_dataForPlot, aes(x=Intensity, y=Sensitivity, shape=CoilPosition)) +
   geom_blank() + 
   scale_color_brewer(palette="Spectral") +
   facet_wrap(~PPT, scales="free") + 
-  geom_point(size=6, color="white", shape=19) +
-  geom_point(size=3, color="grey20") + 
+  geom_point(size=5, color="white", shape=19) +
+  geom_point(size=2.5, color="grey20") + 
   scale_shape_manual(values=c(1,19), name="Coil position", labels=c("Control (Ipsi)","Experimental (Contra)"))
 
 ```
