@@ -11,7 +11,9 @@ output:
 
 ### Description
 Reproducing data analysis and figures reported in "Low intensity TMS enhances perception of visual stimuli" by Arman Abrahamyan, Colin Clifford, Ehsan Arabzadeh and Justin Harris. You can download all these files, load the project into RStudio and reproduce the analysis by running Data\_analysis\_and_figures.Rmd file. 
-
+asdasdasdasd
+asdasdasdasd
+asdasdasdasd
 
 Data are provided in RData (Exp1\_Exp2\_github.RData) and Excel (Exp1_Exp2_github.xslx) formats. 
 
