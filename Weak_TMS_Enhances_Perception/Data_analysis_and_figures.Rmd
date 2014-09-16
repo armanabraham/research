@@ -20,6 +20,7 @@ library(plyr)
 library(ggplot2)
 library(ggthemes)
 library(gridExtra)
+library(effsize) # for cohen.d
 library(pastecs) # For stat.desc
 library(afex)
 library(nlme) # For linear mixed-effects modelling, lme
@@ -40,7 +41,7 @@ head(exp2_dataMean, 4)
 ```
 
 
-### Data analysis of Experiment 1
+### Data analysis of Experiment 1 (coarse orientation discrimination)
 #### Quadratic trend in data 
 Here we test if visual sensitivity changes as a function of TMS stimulation intensity. Due to repeated-measures design, we conducted mixed-modelling analysis wherein subject was a random effect and TMS stimulation intensity was fixed effect. We fitted linear, cubic and quadratic models to the data and found that quadratic fit explains data better than linear or cubic fits ($\chi^2$(1)=5.22, *p*=0.022).
 
@@ -64,11 +65,10 @@ cubic <- update(baseline, .~. + CondAsNum + I(CondAsNum^2)+ I(CondAsNum^3))
 anova(baseline, linear, quadratic, cubic)
 ```
 
-
 #### Plot average data (Figure 1A) 
 This corresponds to Figure 1A in the manuscript. The dashed line shows quadratic trend in the data. 
 
-```{r, echo=FALSE, fig.width=6, fig.height=4.5, dev='pdf'}
+```{r, echo=FALSE, fig.width=5.7, fig.height=4.5, dev='pdf'}
 # Compute high-res quadratic trend for the plot
 # Summarise data for plotting
 fitX <- data.frame(CondAsNum=seq(60,100, 0.1))
@@ -100,6 +100,38 @@ gExp1_SensTrend <- ggplot(exp1_qFitForPlot, aes(x=as.numeric(as.character(Intens
   scale_shape_manual(values=c(1,19), name="Coil position", labels=c("Control (Ipsi)","Experimental (Contra)"))
 
 print(gExp1_SensTrend)
+```
+
+#### Enhancement in visual sensitivity
+To confirm enhancement in visual sensitivity, here we compare experimental (contralateral) stimulation with control (ipsilateral) stimulation. Because ipsilateral control condition was only tested at two TMS intensities (80 and 90% of PT), we performed a 2x2 repeated measures ANOVA comparing the location of the TMS coil (experimental vs control) and stimulation intensities (80 and 90%). 
+
+```{r, echo=FALSE}
+# Compute 2x2 ANOVA comparing 80% and 90% ipsi and contra conditions
+exp1_data8090 <- droplevels(subset(exp1_dataForPlot,  Intensity %in% c("80", "90")))
+aov8090 <- aov.car(data=exp1_data8090, Sensitivity~CoilPosition*Intensity+Error(PPT/(CoilPosition*Intensity)), return="Anova", args.return=list(es="pes"))
+nice.anova(aov8090, es="pes")
+```
+
+This analysis confirmed that there was a significant main effect for the location of the TMS coil (*F*(1,10)=33.45, *p*<0.001, partial $\eta^2$=0.77). However, the main effect of stimulation intensity was not significant, indicating no difference between 80 and 90% intensities (*F*(1,10)=0.10, *p*=0.76, partial $\eta^2$=0.009). Further, there was no interaction between TMS location and stimulation intensity (*F*(1,10)=0.50, *p*=0.49, partial $\eta^2$=0.05).
+
+We followed up with paired t-tests, which showed significant differences between experimental and control conditions at both 80% and 90% stimulation (80%: *Mdiff* =1.24, *t*(10)=2.65, *p*=0.02, Cohen’s *d*=0.27; 90%: *Mdiff* =1.80, *t*(10)=3.80, *p*=0.003, Cohen’s *d*=0.47).
+
+80% contra vs ipsi
+```{r, echo=FALSE}
+# t-tests
+# Compare 80% experimental and control conditions for sensitivity
+exp1_data80 <- droplevels(subset(exp1_data8090, Intensity=="80"))
+t.test(Sensitivity~CoilPosition, data=exp1_data80, paired=TRUE)
+# Cohen's d
+cohen.d(data=exp1_data80, Sensitivity~CoilPosition)
+```
+
+90% contra vs ipsi
+```{r, echo=FALSE}
+# 90% experimental vs control 
+exp1_data90 <- droplevels(subset(exp1_data8090, Intensity=="90"))
+t.test(Sensitivity~CoilPosition, data=exp1_data90, paired=TRUE)
+cohen.d(data=exp1_data90, Sensitivity~CoilPosition)
 ```
 
 #### Plot individual data
