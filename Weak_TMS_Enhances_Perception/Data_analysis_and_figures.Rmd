@@ -64,6 +64,7 @@ cubic <- update(baseline, .~. + CondAsNum + I(CondAsNum^2)+ I(CondAsNum^3))
 anova(baseline, linear, quadratic, cubic)
 ```
 
+
 #### Plot average data (Figure 1A) 
 This corresponds to Figure 1A in the manuscript. The dashed line shows quadratic trend in the data. 
 
