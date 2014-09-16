@@ -38,7 +38,7 @@ head(exp2_dataMean, 4)
 
 
 ### Data analysis of Experiment 1
-#### Trend analysis 
+#### Quadratic trend in data 
 Here we test if visual sensitivity changes as a function of TMS stimulation intensity. Due to repeated-measures design, we conducted mixed-modelling analysis wherein subject was a random effect and TMS stimulation intensity was fixed effect. We fitted linear, cubic and quadratic models to the data and found that quadratic trend explains data better than linear or cubic fits (𝜒2(1)=5.22, p=0.022). 
 ```{r, echo=FALSE}
 ################## --- Data analysis of Experiment 1 --- ###################
