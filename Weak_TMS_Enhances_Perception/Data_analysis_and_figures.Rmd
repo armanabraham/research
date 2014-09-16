@@ -58,7 +58,7 @@ anova(baseline, linear, quadratic, cubic)
 ```
 
 
-#### Plotting change in visual sensitivity as a function of TMS intensity, and control conditions
+#### Plotting change in visual sensitivity as a function of TMS intensity as well as sensitivty during control conditions
 This plot corresponds to Figure 1A in manuscript. 
 
 ```{r, echo=FALSE}
