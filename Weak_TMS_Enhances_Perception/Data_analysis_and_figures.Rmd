@@ -24,6 +24,7 @@ library(effsize) # for cohen.d
 library(pastecs) # For stat.desc
 library(afex)
 library(nlme) # For linear mixed-effects modelling, lme
+library(BayesFactor) # Bayes factor analaysis of different experimental designs
 ## Load Winston Chan's functions to compute within-subjects error bars
 source('WithinSbj_StdErrors.R')
 # Load Exp 1 and 2 data 
@@ -49,7 +50,6 @@ Here we test if visual sensitivity changes as a function of TMS stimulation inte
 ################## --- Data analysis of Experiment 1 --- ###################
 # Order Conditions for plotting convenience
 exp1_dataMean$Condition <- factor(exp1_dataMean$Condition, levels=c("NoTMS", "ip80", "ip90", "60", "70", "80", "90", "100"))
-
 # Find out if there is a quadratic trend in the data as a function of TMS intensity
 # Select only experimental conditions (exclude NoTMS and ipsilatoral stimulation)
 exp1_quadraticFitData <- droplevels(subset(exp1_dataMean, !(Condition %in% c("ip80", "ip90", "NoTMS"))))
@@ -70,7 +70,6 @@ This corresponds to Figure 1A in the manuscript. The dashed line shows quadratic
 
 ```{r, echo=TRUE, fig.width=5.7, fig.height=4.5, dev='pdf'}
 # Compute high-res quadratic trend for the plot
-# Summarise data for plotting
 fitX <- data.frame(CondAsNum=seq(60,100, 0.1))
 predVals <- data.frame(x=fitX$CondAsNum, y=predict(quadratic, fitX, level=0))
 # Plot sensitivity from Exp 1 together with quadratic trend
@@ -85,7 +84,7 @@ colnames(exp1_dataForPlot)[which(names(exp1_dataForPlot) == "Condition")] <- "In
 exp1_dataForPlot$Intensity <- mapvalues(exp1_dataForPlot$Intensity, from = c("ip80", "ip90"), to = c("80", "90"))
 ## Change order of columns (not sure if this is needed, but looks clearer)
 exp1_dataForPlot <- droplevels(exp1_dataForPlot[,c("PPT", "CoilPosition", "Intensity", "Th", "Sensitivity")])
-
+# Compute means and within-subjects std errors
 exp1_qFitForPlot <- summarySEwithin(exp1_dataForPlot, measurevar="Sensitivity", withinvars=c("Intensity", "CoilPosition"), idvar="PPT")
 gExp1_SensTrend <- ggplot(exp1_qFitForPlot, aes(x=as.numeric(as.character(Intensity)), y=Sensitivity, color=CoilPosition)) + 
   theme_few() + 
@@ -98,7 +97,6 @@ gExp1_SensTrend <- ggplot(exp1_qFitForPlot, aes(x=as.numeric(as.character(Intens
   geom_point(size=7, color="white") +
   geom_point(aes(shape=CoilPosition), size=4, color="grey20") + 
   scale_shape_manual(values=c(1,19), name="Coil position", labels=c("Control (Ipsi)","Experimental (Contra)"))
-
 print(gExp1_SensTrend)
 ```
 
@@ -121,8 +119,10 @@ We followed up with paired t-tests, which showed significant differences between
 # t-tests
 # Compare 80% experimental and control conditions for sensitivity
 exp1_data80 <- droplevels(subset(exp1_data8090, Intensity=="80"))
-t.test(Sensitivity~CoilPosition, data=exp1_data80, paired=TRUE)
-# Cohen's d
+exp1_ttest80 <- t.test(Sensitivity~CoilPosition, data=exp1_data80, paired=TRUE)
+# Compute effect size r using formula from DSUR (sqrt(t^2/(t^2+df)))
+paste('r =', sqrt(exp1_ttest80$statistic[[1]]^2/(exp1_ttest80$statistic[[1]]^2+exp1_ttest80$parameter[[1]])))
+# Cohen's d is another estimate of effect size. 
 cohen.d(data=exp1_data80, Sensitivity~CoilPosition)
 ```
 
@@ -130,7 +130,91 @@ cohen.d(data=exp1_data80, Sensitivity~CoilPosition)
 ```{r, echo=TRUE}
 # 90% experimental vs control 
 exp1_data90 <- droplevels(subset(exp1_data8090, Intensity=="90"))
-t.test(Sensitivity~CoilPosition, data=exp1_data90, paired=TRUE)
+exp1_ttest90 <- t.test(Sensitivity~CoilPosition, data=exp1_data90, paired=TRUE)
+print(exp1_ttest90)
+paste('r =', sqrt(exp1_ttest90$statistic[[1]]^2/(exp1_ttest90$statistic[[1]]^2+exp1_ttest90$parameter[[1]])))
 cohen.d(data=exp1_data90, Sensitivity~CoilPosition)
 ```
+
+**Control (ipsi) vs no-TMS**
+```{r, echo=TRUE}
+## Compare ipsi and no-TMS for
+exp1_ipsiNoTMS <- droplevels(subset(exp1_dataMean, Condition %in% c("ip80", "ip90", "NoTMS")))
+exp1_ipsiNoTMSSens <- cast(exp1_ipsiNoTMS, PPT~Condition, value=.(Sensitivity))
+exp1_ipsiNoTMSSens <- ddply(exp1_ipsiNoTMSSens, .(PPT, NoTMS, ip80, ip90), mutate, ipMean=(ip80+ip90)/2)
+exp1_ttestNoTMS <- t.test(exp1_ipsiNoTMSSens$NoTMS, exp1_ipsiNoTMSSens$ipMean, paired=TRUE)
+print(exp1_ttestNoTMS)
+# Compute effect size r
+paste('r =', sqrt(exp1_ttestNoTMS$statistic[[1]]^2/(exp1_ttestNoTMS$statistic[[1]]^2+exp1_ttestNoTMS$parameter[[1]])))
+# Cohen's d
+cohen.d(exp1_ipsiNoTMSSens$NoTMS, exp1_ipsiNoTMSSens$ipMean)
+```
+
+### Data analysis of Exp 2 (fine discrimination)
+
+#### Plot fine orientation discrimination 
+
+As can be seen from the plot, dubjects did not show enhancement in visual sensitivity during fine discrimination of grating oriented ±4, ±10 or ±20 deg. 
+
+```{r, echo=TRUE, fig.width=4.3, fig.height=6, dev='pdf'}
+# exclude NoTMS
+exp2_dataMeansTMS <- droplevels(subset(exp2_dataMean, Condition!="NoTMS"))
+# Column name to be compatible with column names in Exp 1
+colnames(exp2_dataMeansTMS)[which(names(exp2_dataMeansTMS) == "Condition")] <- "CoilPosition"
+
+################## --- Data analysis of combined Experiment 1 and 2 --- ###################
+# Function to plot Experiment 2 data. Can also plot combined Exp 2 and Exp 1 data 
+Exp2_PlotByOrientations <- function(dat, 
+                                    whatToPlot='Sensitivity',    # Variable on y axis
+                                    breaks)                      # y-axis breaks. If not specified, ggplot default is used
+{
+  datSummary <- summarySEwithin(dat, measurevar=whatToPlot, withinvars=c("Orientation", "CoilPosition"), idvar="PPT")
+  # Sort Orientations in ascending order
+  datSummary$Orientation <- factor(datSummary$Orientation, levels = c("4deg", "10deg", "20deg", "45deg@80", "45deg@90"))
+  dodgePos=position_dodge(width=0.0)
+  g <- ggplot(data=datSummary, aes_string(x='Orientation', y=whatToPlot)) + 
+    theme_few() + 
+    geom_errorbar(aes_string(ymin = paste(whatToPlot, '- se'), ymax = paste(whatToPlot, '+ se'), group='CoilPosition'), width = 0.15, size = 0.2, color="grey50", position=dodgePos) +   # Change "se" to "ci" to plot 95% conf intervals
+    geom_line(aes(group=CoilPosition, linetype=CoilPosition), color="grey50", size=1) + 
+    geom_point(size=6.1, color="white") +
+    geom_point(aes(shape=CoilPosition), size=4, color="grey20") + 
+    scale_x_discrete(labels=c("±4", "±10", "±20", "±45\n(80% TMS)", "±45\n(90% TMS)")) + 
+    theme(legend.position="none") +
+    xlab("Grating orientation (deg)") + ylab("Contrast sensitivity") +
+    scale_shape_manual(values=c(19,1), name="Coil\nposition")
+  if (!missing(breaks)) {
+    g <- g + scale_y_continuous(breaks = breaks)
+  }
+  return(g)
+}
+
+# Plot fine orientation discrimination sensitivity for contra and ipsi 
+exp2_plot <- Exp2_PlotByOrientations(exp2_dataMeansTMS, whatToPlot='Sensitivity', breaks=seq(8, 18, 2))
+print(exp2_plot)
+
+```
+
+#### Statistics
+
+A 2x3 repeated measures ANOVA using TMS stimulation sites (contralateral vs ipsilateral) and orientations (4º, 10º, 20º) as factors showed a significant main effect of orientation (F(1.99, 15.95)=123.86, p<0.01, partial η2=0.94, Greenhouse–Geisser corrected). However, there was no significant main effect of TMS stimulation site (F(1, 8)=0.13, p=0.73, partial η2=0.02), nor was there an interaction between stimulation site and grating orientation (F(1.63, 13.04)=0.28, p=0.72, partial η2=0.03, Greenhouse–Geisser corrected). 
+
+```{r, echo=TRUE}
+# Compute 2x3 repeated-measures ANOVA comparing coil position (ipsi, contra) and orientations (4,10,20)
+exp2_aov2by3Sens <- aov.car(data=exp2_dataMeansTMS, Sensitivity~CoilPosition*Orientation+Error(PPT/(CoilPosition*Orientation)), return="Anova", args.return=list(es="pes"))
+nice.anova(exp2_aov2by3Sens, es="pes")
+```
+
+To assess the strength of the evidence for the null hypothesis that there is no difference between experimental and control TMS stimulation sites, we ran a Bayes factor analysis for paired t-tests with the r scale parameter set to 1.0 to provide equal support for the null and alternative hypotheses (Rouder et al., 2009). 
+
+```{r, echo=TRUE}
+# Bayes factor two-samples t-test against the NULL hypothesis that the difference between samples is 0
+exp2_meanContraIpsi <- cast(exp2_dataMeansTMS, PPT~CoilPosition, value=.(Sensitivity), mean)
+# rscale in Bayes factor provides support for the null hypothesis. We will set it to be wide 
+# which sets r to 1 as recommended in Rouder et al. (2009)
+exp2_contraIpsiBF <- ttestBF(x=exp2_meanContraIpsi$Contra, y=exp2_meanContraIpsi$Ipsi, paired = TRUE, rscale=1.0)
+# Get likelihood of NULL hypothesis over difference between contra and ipsi
+1/exp2_contraIpsiBF
+```
+
+The Bayes factor analysis shows that it is 3.9 times more likely that there is no effect of TMS than there is some effect, which is within the range of substantial evidence (Jeffreys, 1961).
 
