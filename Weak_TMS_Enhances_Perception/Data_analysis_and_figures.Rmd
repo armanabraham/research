@@ -134,23 +134,3 @@ t.test(Sensitivity~CoilPosition, data=exp1_data90, paired=TRUE)
 cohen.d(data=exp1_data90, Sensitivity~CoilPosition)
 ```
 
-#### Plot individual data
-Same as the above but plotted by subject. For clarity, y-axis is scaled individually. 
-
-```{r, echo=FALSE, fig.width=10, fig.height=7, dev='pdf'}
-exp1_dataForPlot$Intensity <- factor(exp1_dataForPlot$Intensity, levels=c("60", "70", "80", "90", "100"))
-ggplot(exp1_dataForPlot, aes(x=Intensity, y=Sensitivity, shape=CoilPosition)) + 
-  theme_few() + 
-  theme(legend.position=c(0.87,0.2)) + 
-  xlab("Stimulation intensity\n (% phosphene threshold)") + 
-  ylab("Contrast sensitivity") + 
-  geom_line(aes(group=CoilPosition), color="grey50") + 
-  geom_blank() + 
-  scale_color_brewer(palette="Spectral") +
-  facet_wrap(~PPT, scales="free") + 
-  geom_point(size=5, color="white", shape=19) +
-  geom_point(size=2.5, color="grey20") + 
-  scale_y_continuous(expand = c(0.1, 0.1)) + 
-  scale_shape_manual(values=c(1,19), name="Coil position", labels=c("Control (Ipsi)","Experimental (Contra)"))
-
-```
