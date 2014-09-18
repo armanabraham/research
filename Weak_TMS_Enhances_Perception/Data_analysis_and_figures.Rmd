@@ -15,7 +15,7 @@ Reproducing data analysis and figures reported in "Low intensity TMS enhances pe
 
 Data are provided in RData (Exp1\_Exp2\_github.RData) and Excel (Exp1_Exp2_github.xslx) formats. 
 
-```{r echo=FALSE, message=FALSE}
+```{r echo=TRUE, message=FALSE}
 library(plyr)
 library(ggplot2)
 library(ggthemes)
@@ -24,14 +24,14 @@ library(effsize) # for cohen.d
 library(pastecs) # For stat.desc
 library(afex)
 library(nlme) # For linear mixed-effects modelling, lme
-## Load Winston Chan's function to compute within-subjects error bars
+## Load Winston Chan's functions to compute within-subjects error bars
 source('WithinSbj_StdErrors.R')
-
 # Load Exp 1 and 2 data 
 load("Exp1_Exp2_github.RData")
 # Order Conditions for plotting convenience
 exp1_dataMean$Condition <- factor(exp1_dataMean$Condition, levels=c("NoTMS", "ip80", "ip90", "60", "70", "80", "90", "100"))
 ```
+
 ### Data
 Individual subject data for both Exp 1 and 2 are saved as exp1\_dataMean and exp2\_dataMean, respectively. These are data frames. 
 
@@ -41,11 +41,11 @@ head(exp2_dataMean, 4)
 ```
 
 
-### Data analysis of Experiment 1 (coarse orientation discrimination)
+### Data analysis of Exp 1 (coarse discrimination)
 #### Quadratic trend in data 
-Here we test if visual sensitivity changes as a function of TMS stimulation intensity. Due to repeated-measures design, we conducted mixed-modelling analysis wherein subject was a random effect and TMS stimulation intensity was fixed effect. We fitted linear, cubic and quadratic models to the data and found that quadratic fit explains data better than linear or cubic fits ($\chi^2$(1)=5.22, *p*=0.022).
+Here we test if visual sensitivity changes as a function of TMS stimulation intensity when subjects discriminated gratings oriented ±45 deg. Due to repeated-measures design, we conducted mixed-modelling analysis wherein subject was a random effect and TMS stimulation intensity was fixed effect. We fitted linear, cubic and quadratic models to the data and found that quadratic fit explains data better than linear or cubic fits ($\chi^2$(1)=5.22, *p*=0.022).
 
-```{r, echo=FALSE}
+```{r, echo=TRUE}
 ################## --- Data analysis of Experiment 1 --- ###################
 # Order Conditions for plotting convenience
 exp1_dataMean$Condition <- factor(exp1_dataMean$Condition, levels=c("NoTMS", "ip80", "ip90", "60", "70", "80", "90", "100"))
@@ -65,10 +65,10 @@ cubic <- update(baseline, .~. + CondAsNum + I(CondAsNum^2)+ I(CondAsNum^3))
 anova(baseline, linear, quadratic, cubic)
 ```
 
-#### Plot average data (Figure 1A) 
+#### Sensitivity change as a function of TMS stimulation (Figure 1A) 
 This corresponds to Figure 1A in the manuscript. The dashed line shows quadratic trend in the data. 
 
-```{r, echo=FALSE, fig.width=5.7, fig.height=4.5, dev='pdf'}
+```{r, echo=TRUE, fig.width=5.7, fig.height=4.5, dev='pdf'}
 # Compute high-res quadratic trend for the plot
 # Summarise data for plotting
 fitX <- data.frame(CondAsNum=seq(60,100, 0.1))
@@ -105,7 +105,7 @@ print(gExp1_SensTrend)
 #### Enhancement in visual sensitivity
 To confirm enhancement in visual sensitivity, here we compare experimental (contralateral) stimulation with control (ipsilateral) stimulation. Because ipsilateral control condition was only tested at two TMS intensities (80 and 90% of PT), we performed a 2x2 repeated measures ANOVA comparing the location of the TMS coil (experimental vs control) and stimulation intensities (80 and 90%). 
 
-```{r, echo=FALSE}
+```{r, echo=TRUE}
 # Compute 2x2 ANOVA comparing 80% and 90% ipsi and contra conditions
 exp1_data8090 <- droplevels(subset(exp1_dataForPlot,  Intensity %in% c("80", "90")))
 aov8090 <- aov.car(data=exp1_data8090, Sensitivity~CoilPosition*Intensity+Error(PPT/(CoilPosition*Intensity)), return="Anova", args.return=list(es="pes"))
@@ -116,8 +116,8 @@ This analysis confirmed that there was a significant main effect for the locatio
 
 We followed up with paired t-tests, which showed significant differences between experimental and control conditions at both 80% and 90% stimulation (80%: *Mdiff* =1.24, *t*(10)=2.65, *p*=0.02, Cohen’s *d*=0.27; 90%: *Mdiff* =1.80, *t*(10)=3.80, *p*=0.003, Cohen’s *d*=0.47).
 
-80% contra vs ipsi
-```{r, echo=FALSE}
+**80% contra vs ipsi**
+```{r, echo=TRUE}
 # t-tests
 # Compare 80% experimental and control conditions for sensitivity
 exp1_data80 <- droplevels(subset(exp1_data8090, Intensity=="80"))
@@ -126,8 +126,8 @@ t.test(Sensitivity~CoilPosition, data=exp1_data80, paired=TRUE)
 cohen.d(data=exp1_data80, Sensitivity~CoilPosition)
 ```
 
-90% contra vs ipsi
-```{r, echo=FALSE}
+**90% contra vs ipsi**
+```{r, echo=TRUE}
 # 90% experimental vs control 
 exp1_data90 <- droplevels(subset(exp1_data8090, Intensity=="90"))
 t.test(Sensitivity~CoilPosition, data=exp1_data90, paired=TRUE)
