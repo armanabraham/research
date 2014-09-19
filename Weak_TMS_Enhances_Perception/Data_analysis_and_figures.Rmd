@@ -30,7 +30,8 @@ source('WithinSbj_StdErrors.R')
 # Load Exp 1 and 2 data 
 load("Exp1_Exp2_github.RData")
 # Order Conditions for plotting convenience
-exp1_dataMean$Condition <- factor(exp1_dataMean$Condition, levels=c("NoTMS", "ip80", "ip90", "60", "70", "80", "90", "100"))
+exp1_dataMean$Condition <- factor(exp1_dataMean$Condition, 
+                                  levels=c("NoTMS", "ip80", "ip90", "60", "70", "80", "90", "100"))
 ```
 
 ### Data
@@ -49,7 +50,8 @@ Here we test if visual sensitivity changes as a function of TMS stimulation inte
 ```{r, echo=TRUE}
 ################## --- Data analysis of Experiment 1 --- ###################
 # Order Conditions for plotting convenience
-exp1_dataMean$Condition <- factor(exp1_dataMean$Condition, levels=c("NoTMS", "ip80", "ip90", "60", "70", "80", "90", "100"))
+exp1_dataMean$Condition <- factor(exp1_dataMean$Condition, 
+                                  levels=c("NoTMS", "ip80", "ip90", "60", "70", "80", "90", "100"))
 # Find out if there is a quadratic trend in the data as a function of TMS intensity
 # Select only experimental conditions (exclude NoTMS and ipsilatoral stimulation)
 exp1_quadraticFitData <- droplevels(subset(exp1_dataMean, !(Condition %in% c("ip80", "ip90", "NoTMS"))))
@@ -81,19 +83,27 @@ exp1_dataForPlot$CoilPosition <- as.factor(exp1_dataForPlot$CoilPosition)
 ## Change the name of the column called "Condition" into "Intensity" cause it is more intuitive
 colnames(exp1_dataForPlot)[which(names(exp1_dataForPlot) == "Condition")] <- "Intensity"
 ## Now change ip80 and ip90 into 80 and 90
-exp1_dataForPlot$Intensity <- mapvalues(exp1_dataForPlot$Intensity, from = c("ip80", "ip90"), to = c("80", "90"))
+exp1_dataForPlot$Intensity <- mapvalues(exp1_dataForPlot$Intensity, 
+                                        from = c("ip80", "ip90"), to = c("80", "90"))
 ## Change order of columns (not sure if this is needed, but looks clearer)
 exp1_dataForPlot <- droplevels(exp1_dataForPlot[,c("PPT", "CoilPosition", "Intensity", "Th", "Sensitivity")])
 # Compute means and within-subjects std errors
-exp1_qFitForPlot <- summarySEwithin(exp1_dataForPlot, measurevar="Sensitivity", withinvars=c("Intensity", "CoilPosition"), idvar="PPT")
-gExp1_SensTrend <- ggplot(exp1_qFitForPlot, aes(x=as.numeric(as.character(Intensity)), y=Sensitivity, color=CoilPosition)) + 
+exp1_qFitForPlot <- summarySEwithin(exp1_dataForPlot, 
+                                    measurevar="Sensitivity", 
+                                    withinvars=c("Intensity", "CoilPosition"), 
+                                    idvar="PPT")
+gExp1_SensTrend <- ggplot(exp1_qFitForPlot, aes(x=as.numeric(as.character(Intensity)), 
+                                                y=Sensitivity, color=CoilPosition)) + 
   theme_few() + 
   theme(legend.position=c(0.19,0.87)) + 
   xlab("Stimulation intensity\n (% phosphene threshold)") + 
   ylab("Contrast sensitivity") + 
   geom_line(data=predVals, aes(x=x, y=y), linetype="dashed", colour="grey70", size=.3) +
   geom_line(subset=.(CoilPosition=="Expt"), aes(group=1), color="grey50", size=1) + 
-  geom_errorbar(aes(ymin = Sensitivity - se, ymax = Sensitivity + se), width = 0.00, size = 0.2, color="grey50") +   # Change "se" to "ci" to plot 95% conf intervals
+  geom_errorbar(aes(ymin = Sensitivity - se, ymax = Sensitivity + se), 
+                width = 0.00, 
+                size = 0.2, 
+                color="grey50") +   # Change "se" to "ci" to plot 95% conf intervals
   geom_point(size=7, color="white") +
   geom_point(aes(shape=CoilPosition), size=4, color="grey20") + 
   scale_shape_manual(values=c(1,19), name="Coil position", labels=c("Control (Ipsi)","Experimental (Contra)"))
@@ -162,19 +172,27 @@ exp2_dataMeansTMS <- droplevels(subset(exp2_dataMean, Condition!="NoTMS"))
 # Column name to be compatible with column names in Exp 1
 colnames(exp2_dataMeansTMS)[which(names(exp2_dataMeansTMS) == "Condition")] <- "CoilPosition"
 
-################## --- Data analysis of combined Experiment 1 and 2 --- ###################
+################## --- Data analysis of combined Experiment 2 --- ###################
 # Function to plot Experiment 2 data. Can also plot combined Exp 2 and Exp 1 data 
 Exp2_PlotByOrientations <- function(dat, 
                                     whatToPlot='Sensitivity',    # Variable on y axis
                                     breaks)                      # y-axis breaks. If not specified, ggplot default is used
 {
-  datSummary <- summarySEwithin(dat, measurevar=whatToPlot, withinvars=c("Orientation", "CoilPosition"), idvar="PPT")
+  datSummary <- summarySEwithin(dat, measurevar=whatToPlot, 
+                                withinvars=c("Orientation", "CoilPosition"), 
+                                idvar="PPT")
   # Sort Orientations in ascending order
-  datSummary$Orientation <- factor(datSummary$Orientation, levels = c("4deg", "10deg", "20deg", "45deg@80", "45deg@90"))
+  datSummary$Orientation <- factor(datSummary$Orientation, 
+                                   levels = c("4deg", "10deg", "20deg", "45deg@80", "45deg@90"))
   dodgePos=position_dodge(width=0.0)
   g <- ggplot(data=datSummary, aes_string(x='Orientation', y=whatToPlot)) + 
     theme_few() + 
-    geom_errorbar(aes_string(ymin = paste(whatToPlot, '- se'), ymax = paste(whatToPlot, '+ se'), group='CoilPosition'), width = 0.15, size = 0.2, color="grey50", position=dodgePos) +   # Change "se" to "ci" to plot 95% conf intervals
+    geom_errorbar(aes_string(ymin = paste(whatToPlot, '- se'), 
+                             ymax = paste(whatToPlot, '+ se'), 
+                             group='CoilPosition'), 
+                  width = 0.15, 
+                  size = 0.2, 
+                  color="grey50") +   # Change "se" to "ci" to plot 95% conf intervals
     geom_line(aes(group=CoilPosition, linetype=CoilPosition), color="grey50", size=1) + 
     geom_point(size=6.1, color="white") +
     geom_point(aes(shape=CoilPosition), size=4, color="grey20") + 
@@ -187,16 +205,14 @@ Exp2_PlotByOrientations <- function(dat,
   }
   return(g)
 }
-
 # Plot fine orientation discrimination sensitivity for contra and ipsi 
 exp2_plot <- Exp2_PlotByOrientations(exp2_dataMeansTMS, whatToPlot='Sensitivity', breaks=seq(8, 18, 2))
 print(exp2_plot)
-
 ```
 
 #### Statistics
 
-A 2x3 repeated measures ANOVA using TMS stimulation sites (contralateral vs ipsilateral) and orientations (4º, 10º, 20º) as factors showed a significant main effect of orientation (F(1.99, 15.95)=123.86, p<0.01, partial η2=0.94, Greenhouse–Geisser corrected). However, there was no significant main effect of TMS stimulation site (F(1, 8)=0.13, p=0.73, partial η2=0.02), nor was there an interaction between stimulation site and grating orientation (F(1.63, 13.04)=0.28, p=0.72, partial η2=0.03, Greenhouse–Geisser corrected). 
+A 2x3 repeated measures ANOVA using TMS stimulation sites (contralateral vs ipsilateral) and orientations (4º, 10º, 20º) as factors showed a significant main effect of orientation (*F*(1.99, 15.95)=123.86, *p*<0.01, partial $\eta^2$=0.94, Greenhouse–Geisser corrected). However, there was no significant main effect of TMS stimulation site (*F*(1, 8)=0.13, *p*=0.73, partial $\eta^2$=0.02), nor was there an interaction between stimulation site and grating orientation (*F*(1.63, 13.04)=0.28, *p*=0.72, partial $\eta^2$=0.03, Greenhouse–Geisser corrected). 
 
 ```{r, echo=TRUE}
 # Compute 2x3 repeated-measures ANOVA comparing coil position (ipsi, contra) and orientations (4,10,20)
@@ -209,12 +225,18 @@ To assess the strength of the evidence for the null hypothesis that there is no 
 ```{r, echo=TRUE}
 # Bayes factor two-samples t-test against the NULL hypothesis that the difference between samples is 0
 exp2_meanContraIpsi <- cast(exp2_dataMeansTMS, PPT~CoilPosition, value=.(Sensitivity), mean)
-# rscale in Bayes factor provides support for the null hypothesis. We will set it to be wide 
-# which sets r to 1 as recommended in Rouder et al. (2009)
+# rscale in Bayes factor provides support for the null hypothesis. We will set it 1.0 to 
+# provide equal support for the null and alternative hypotheses (Rouder et al., 2009)
 exp2_contraIpsiBF <- ttestBF(x=exp2_meanContraIpsi$Contra, y=exp2_meanContraIpsi$Ipsi, paired = TRUE, rscale=1.0)
 # Get likelihood of NULL hypothesis over difference between contra and ipsi
 1/exp2_contraIpsiBF
 ```
 
-The Bayes factor analysis shows that it is 3.9 times more likely that there is no effect of TMS than there is some effect, which is within the range of substantial evidence (Jeffreys, 1961).
+The Bayes factor analysis shows that it is 3.9 times more likely that there is no effect of TMS during fine orientation discrimination than there is some effect, which is within the range of substantial evidence (Jeffreys, 1961).
 
+
+
+
+    
+    
+    
