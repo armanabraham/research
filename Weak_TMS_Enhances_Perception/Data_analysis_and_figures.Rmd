@@ -5,7 +5,6 @@ date: ''
 output:
   html_document:
     highlight: kate
-    self_contained: no
     theme: spacelab
     toc: yes
 ---
@@ -71,7 +70,7 @@ anova(baseline, linear, quadratic, cubic)
 #### Sensitivity change as a function of TMS stimulation (Figure 1A) 
 This corresponds to Figure 1A in the manuscript. The dashed line shows quadratic trend in the data. 
 
-```{r, echo=TRUE, fig.width=5.7, fig.height=4.5, dev='pdf'}
+```{r, echo=TRUE, fig.width=5.7, fig.height=4.5, dev='png'}
 # Compute high-res quadratic trend for the plot
 fitX <- data.frame(CondAsNum=seq(60,100, 0.1))
 predVals <- data.frame(x=fitX$CondAsNum, y=predict(quadratic, fitX, level=0))
@@ -167,7 +166,7 @@ cohen.d(exp1_ipsiNoTMSSens$NoTMS, exp1_ipsiNoTMSSens$ipMean)
 
 As can be seen from the plot, dubjects did not show enhancement in visual sensitivity during fine discrimination of grating oriented ±4, ±10 or ±20 deg. 
 
-```{r, echo=TRUE, fig.width=4.3, fig.height=6, dev='pdf'}
+```{r, echo=TRUE, fig.width=4.3, fig.height=6, dev='png'}
 # exclude NoTMS
 exp2_dataMeansTMS <- droplevels(subset(exp2_dataMean, Condition!="NoTMS"))
 # Column name to be compatible with column names in Exp 1
