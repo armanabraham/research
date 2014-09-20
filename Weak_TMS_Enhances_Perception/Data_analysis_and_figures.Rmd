@@ -6,6 +6,7 @@ output:
   html_document:
     highlight: textmate
     theme: cerulean
+    toc: yes
 ---
 
 ### Description
