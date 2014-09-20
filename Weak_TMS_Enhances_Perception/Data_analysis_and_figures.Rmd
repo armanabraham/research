@@ -2,12 +2,12 @@
 title: "Table of contents"
 author: ''
 date: ''
-clean: false
 output:
   html_document:
-    highlight: kate
-    theme: spacelab
-    keep_md: true
+    highlight: textmate
+    keep_md: yes
+    theme: cerulean
+clean: no
 ---
 
 ### Description
