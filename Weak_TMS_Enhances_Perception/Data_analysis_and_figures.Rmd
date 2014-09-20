@@ -5,6 +5,7 @@ date: ''
 output:
   html_document:
     highlight: kate
+    self_contained: no
     theme: spacelab
     toc: yes
 ---
