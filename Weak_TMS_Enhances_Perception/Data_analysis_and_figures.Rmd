@@ -29,9 +29,6 @@ library(BayesFactor) # Bayes factor analaysis of different experimental designs
 source('WithinSbj_StdErrors.R')
 # Load Exp 1 and 2 data 
 load("Exp1_Exp2_github.RData")
-# Order Conditions for plotting convenience
-exp1_dataMean$Condition <- factor(exp1_dataMean$Condition, 
-                                  levels=c("NoTMS", "ip80", "ip90", "60", "70", "80", "90", "100"))
 ```
 
 ### Data
