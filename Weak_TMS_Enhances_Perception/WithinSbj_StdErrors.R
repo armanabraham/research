@@ -1,5 +1,5 @@
 # Functions to compute within-subject errors. 
-# Author: Winston Chan
+# Author: Winston Chang
 # Source: http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_(ggplot2)
 
 ## Summarizes data.
