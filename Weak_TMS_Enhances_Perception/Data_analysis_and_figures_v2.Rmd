@@ -13,7 +13,7 @@ output:
 Reproducing data analysis and figures reported in "Low intensity TMS enhances perception of visual stimuli" by Arman Abrahamyan, Colin Clifford, Ehsan Arabzadeh and Justin Harris. You can download all these files, load the project into RStudio and reproduce the analysis by running Data\_analysis\_and_figures.Rmd file. 
 
 
-Data are provided in RData (Exp1\_Exp2\_github.RData) and Excel (Exp1_Exp2_github.xslx) formats. 
+Data are provided in RData (Data\_on\_Github.RData) and Excel (Data\_On\_Github.xslx) formats. 
 
 ```{r echo=TRUE, message=FALSE}
 library(plyr)
@@ -25,27 +25,26 @@ library(pastecs) # For stat.desc
 library(afex)
 library(nlme) # For linear mixed-effects modelling, lme
 library(BayesFactor) # Bayes factor analaysis of different experimental designs
-## Load Winston Chan's functions to compute within-subjects error bars
+## Load Winston Chang's functions to compute within-subjects error bars
 source('WithinSbj_StdErrors.R')
 # Load Exp 1 and 2 data 
-load("Exp1_Exp2_github.RData")
+load("Data_On_Github.RData")
 ```
 
 ### Data
-Individual subject data for both Exp 1 and 2 are saved as exp1\_dataMean and exp2\_dataMean, respectively. These are data frames. 
+Show how data are formatted for the analysis
 
 ```{r echo=TRUE, message=FALSE}
 head(exp1_dataMean, 4)
-head(exp2_dataMean, 4)
 ```
 
 
-### Data analysis of Exp 1 (coarse discrimination)
+### Data analysis
 #### Quadratic trend in data 
 Here we test if visual sensitivity changes as a function of TMS stimulation intensity when subjects discriminated gratings oriented ±45 deg. Due to repeated-measures design, we conducted mixed-modelling analysis wherein subject was a random effect and TMS stimulation intensity was fixed effect. We fitted linear, cubic and quadratic models to the data and found that quadratic fit explains data better than linear or cubic fits ($\chi^2$(1)=5.22, *p*=0.022).
 
 ```{r, echo=TRUE}
-################## --- Data analysis of Experiment 1 --- ###################
+################## --- Data analysis --- ###################
 # Order Conditions for plotting convenience
 exp1_dataMean$Condition <- factor(exp1_dataMean$Condition, 
                                   levels=c("NoTMS", "ip80", "ip90", "60", "70", "80", "90", "100"))
@@ -64,8 +63,8 @@ cubic <- update(baseline, .~. + CondAsNum + I(CondAsNum^2)+ I(CondAsNum^3))
 anova(baseline, linear, quadratic, cubic)
 ```
 
-#### Sensitivity change as a function of TMS stimulation (Figure 1A) 
-This corresponds to Figure 1A in the manuscript. The dashed line shows quadratic trend in the data. 
+#### Sensitivity change as a function of TMS stimulation (Figure 1) 
+This corresponds to Figure 1 in the manuscript. The dashed line shows quadratic trend in the data. 
 
 ```{r, echo=TRUE, fig.width=5.7, fig.height=4.5, dev='png'}
 # Compute high-res quadratic trend for the plot
@@ -157,79 +156,7 @@ paste('r =', sqrt(exp1_ttestNoTMS$statistic[[1]]^2/(exp1_ttestNoTMS$statistic[[1
 cohen.d(exp1_ipsiNoTMSSens$NoTMS, exp1_ipsiNoTMSSens$ipMean)
 ```
 
-### Data analysis of Exp 2 (fine discrimination)
 
-#### Plot fine orientation discrimination 
-
-As can be seen from the plot, dubjects did not show enhancement in visual sensitivity during fine discrimination of grating oriented ±4, ±10 or ±20 deg. 
-
-```{r, echo=TRUE, fig.width=4.3, fig.height=6, dev='png'}
-# exclude NoTMS
-exp2_dataMeansTMS <- droplevels(subset(exp2_dataMean, Condition!="NoTMS"))
-# Column name to be compatible with column names in Exp 1
-colnames(exp2_dataMeansTMS)[which(names(exp2_dataMeansTMS) == "Condition")] <- "CoilPosition"
-
-################## --- Data analysis of combined Experiment 2 --- ###################
-# Function to plot Experiment 2 data. Can also plot combined Exp 2 and Exp 1 data 
-Exp2_PlotByOrientations <- function(dat, 
-                                    whatToPlot='Sensitivity',    # Variable on y axis
-                                    breaks)                      # y-axis breaks. If not specified, ggplot default is used
-{
-  datSummary <- summarySEwithin(dat, measurevar=whatToPlot, 
-                                withinvars=c("Orientation", "CoilPosition"), 
-                                idvar="PPT")
-  # Sort Orientations in ascending order
-  datSummary$Orientation <- factor(datSummary$Orientation, 
-                                   levels = c("4deg", "10deg", "20deg", "45deg@80", "45deg@90"))
-  dodgePos=position_dodge(width=0.0)
-  g <- ggplot(data=datSummary, aes_string(x='Orientation', y=whatToPlot)) + 
-    theme_few() + 
-    geom_errorbar(aes_string(ymin = paste(whatToPlot, '- se'), 
-                             ymax = paste(whatToPlot, '+ se'), 
-                             group='CoilPosition'), 
-                  width = 0.15, 
-                  size = 0.2, 
-                  color="grey50") +   # Change "se" to "ci" to plot 95% conf intervals
-    geom_line(aes(group=CoilPosition, linetype=CoilPosition), color="grey50", size=1) + 
-    geom_point(size=6.1, color="white") +
-    geom_point(aes(shape=CoilPosition), size=4, color="grey20") + 
-    scale_x_discrete(labels=c("±4", "±10", "±20", "±45\n(80% TMS)", "±45\n(90% TMS)")) + 
-    theme(legend.position="none") +
-    xlab("Grating orientation (deg)") + ylab("Contrast sensitivity") +
-    scale_shape_manual(values=c(19,1), name="Coil\nposition")
-  if (!missing(breaks)) {
-    g <- g + scale_y_continuous(breaks = breaks)
-  }
-  return(g)
-}
-# Plot fine orientation discrimination sensitivity for contra and ipsi 
-exp2_plot <- Exp2_PlotByOrientations(exp2_dataMeansTMS, whatToPlot='Sensitivity', breaks=seq(8, 18, 2))
-print(exp2_plot)
-```
-
-#### Statistics
-
-A 2x3 repeated measures ANOVA using TMS stimulation sites (contralateral vs ipsilateral) and orientations (4º, 10º, 20º) as factors showed a significant main effect of orientation (*F*(1.99, 15.95)=123.86, *p*<0.01, partial $\eta^2$=0.94, Greenhouse–Geisser corrected). However, there was no significant main effect of TMS stimulation site (*F*(1, 8)=0.13, *p*=0.73, partial $\eta^2$=0.02), nor was there an interaction between stimulation site and grating orientation (*F*(1.63, 13.04)=0.28, *p*=0.72, partial $\eta^2$=0.03, Greenhouse–Geisser corrected). 
-
-```{r, echo=TRUE}
-# Compute 2x3 repeated-measures ANOVA comparing coil position (ipsi, contra) and orientations (4,10,20)
-exp2_aov2by3Sens <- aov.car(data=exp2_dataMeansTMS, Sensitivity~CoilPosition*Orientation+Error(PPT/(CoilPosition*Orientation)), return="Anova", args.return=list(es="pes"))
-nice.anova(exp2_aov2by3Sens, es="pes")
-```
-
-To assess the strength of the evidence for the null hypothesis that there is no difference between experimental and control TMS stimulation sites, we ran a Bayes factor analysis for paired t-tests with the r scale parameter set to 1.0 to provide equal support for the null and alternative hypotheses (Rouder et al., 2009). 
-
-```{r, echo=TRUE}
-# Bayes factor two-samples t-test against the NULL hypothesis that the difference between samples is 0
-exp2_meanContraIpsi <- cast(exp2_dataMeansTMS, PPT~CoilPosition, value=.(Sensitivity), mean)
-# rscale in Bayes factor provides support for the null hypothesis. We will set it 1.0 to 
-# provide equal support for the null and alternative hypotheses (Rouder et al., 2009)
-exp2_contraIpsiBF <- ttestBF(x=exp2_meanContraIpsi$Contra, y=exp2_meanContraIpsi$Ipsi, paired = TRUE, rscale=1.0)
-# Get likelihood of NULL hypothesis over difference between contra and ipsi
-1/exp2_contraIpsiBF
-```
-
-The Bayes factor analysis shows that it is 3.9 times more likely that there is no effect of TMS during fine orientation discrimination than there is some effect, which is within the range of substantial evidence (Jeffreys, 1961).
 
 
 
