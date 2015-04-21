@@ -156,7 +156,17 @@ paste('r =', sqrt(exp1_ttestNoTMS$statistic[[1]]^2/(exp1_ttestNoTMS$statistic[[1
 cohen.d(exp1_ipsiNoTMSSens$NoTMS, exp1_ipsiNoTMSSens$ipMean)
 ```
 
-
+**Best TMS condition (90% of PT)  vs no-TMS**
+```{r, echo=TRUE}
+exp1_NoTMSAnd90 <- droplevels(subset(exp1_dataMean, Condition %in% c("90", "NoTMS")))
+exp1_ttestNoTMSvs90 <- t.test(data=exp1_NoTMSAnd90, Sensitivity~Condition, paired=TRUE)
+print(exp1_ttestNoTMSvs90)
+# Effect size as r
+paste('r =', sqrt(exp1_ttestNoTMSvs90$statistic[[1]]^2/(exp1_ttestNoTMSvs90$statistic[[1]]^2+exp1_ttestNoTMSvs90$parameter[[1]])))
+# Cohen's d
+exp1_NoTMSAnd90Wide <- cast(exp1_NoTMSAnd90, PPT~Condition, value='Sensitivity')
+cohen.d(exp1_NoTMSAnd90Wide$`90`, exp1_NoTMSAnd90Wide$NoTMS)
+```
 
 
 
