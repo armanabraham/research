@@ -3,6 +3,8 @@ title: "Table of contents"
 author: ''
 date: ''
 output:
+  pdf_document:
+    toc: yes
   html_document:
     highlight: textmate
     theme: cerulean
@@ -10,7 +12,7 @@ output:
 ---
 
 ### Description
-Reproducing data analysis and figures reported in "Low intensity TMS enhances perception of visual stimuli" by Arman Abrahamyan, Colin Clifford, Ehsan Arabzadeh and Justin Harris [published in Brain Stimulation](http://www.sciencedirect.com/science/article/pii/S1935861X15010141). You can accesss single-subject data and reproduce the analysis by downloading files from [GitHub page](https://github.com/armanabraham/research/tree/master/Weak_TMS_Enhances_Perception). If you use RStudio, load the downloaded project and reproduce the analysis by running Data\_analysis\_and_figures.Rmd file.
+Reproducing data analysis and figures reported in "Low intensity TMS enhances perception of visual stimuli" by Abrahamyan, Clifford, Arabzadeh and Harris (2015) [published in Brain Stimulation](http://www.sciencedirect.com/science/article/pii/S1935861X15010141). You can accesss single-subject data and reproduce the analysis by downloading files from [github.com/armanabraham](https://github.com/armanabraham/research/tree/master/Weak_TMS_Enhances_Perception). If you use RStudio, load the downloaded project and reproduce the analysis by running Data\_analysis\_and_figures.Rmd file.
 
 
 Subject data are provided in RData (Data\_on\_Github.RData) and Excel (Data\_On\_Github.xslx) formats. 
@@ -76,13 +78,15 @@ exp1_dataForPlot <- droplevels(subset(exp1_dataMean, Condition!="NoTMS"))
 exp1_dataForPlot$CoilPosition <- "Expt"
 exp1_dataForPlot$CoilPosition[exp1_dataForPlot$Condition %in% c("ip80", "ip90")] <- "Cntr"
 exp1_dataForPlot$CoilPosition <- as.factor(exp1_dataForPlot$CoilPosition)
-## Change the name of the column called "Condition" into "Intensity" cause it is more intuitive
+## Change the name of the column called "Condition" into "Intensity" cause 
+## it is more intuitive
 colnames(exp1_dataForPlot)[which(names(exp1_dataForPlot) == "Condition")] <- "Intensity"
 ## Now change ip80 and ip90 into 80 and 90
 exp1_dataForPlot$Intensity <- mapvalues(exp1_dataForPlot$Intensity, 
                                         from = c("ip80", "ip90"), to = c("80", "90"))
 ## Change order of columns (not sure if this is needed, but looks clearer)
-exp1_dataForPlot <- droplevels(exp1_dataForPlot[,c("PPT", "CoilPosition", "Intensity", "Th", "Sensitivity")])
+exp1_dataForPlot <- droplevels(exp1_dataForPlot[,c("PPT", "CoilPosition", 
+                                                   "Intensity", "Th", "Sensitivity")])
 # Compute means and within-subjects std errors
 exp1_qFitForPlot <- summarySEwithin(exp1_dataForPlot, 
                                     measurevar="Sensitivity", 
@@ -102,7 +106,8 @@ gExp1_SensTrend <- ggplot(exp1_qFitForPlot, aes(x=as.numeric(as.character(Intens
                 color="grey50") +   # Change "se" to "ci" to plot 95% conf intervals
   geom_point(size=7, color="white") +
   geom_point(aes(shape=CoilPosition), size=4, color="grey20") + 
-  scale_shape_manual(values=c(1,19), name="Coil position", labels=c("Control (Ipsi)","Experimental (Contra)"))
+  scale_shape_manual(values=c(1,19), name="Coil position", 
+                     labels=c("Control (Ipsi)","Experimental (Contra)"))
 print(gExp1_SensTrend)
 ```
 
@@ -112,7 +117,9 @@ To confirm enhancement in visual sensitivity, here we compare experimental (cont
 ```{r, echo=TRUE}
 # Compute 2x2 ANOVA comparing 80% and 90% ipsi and contra conditions
 exp1_data8090 <- droplevels(subset(exp1_dataForPlot,  Intensity %in% c("80", "90")))
-aov8090 <- aov.car(data=exp1_data8090, Sensitivity~CoilPosition*Intensity+Error(PPT/(CoilPosition*Intensity)), return="Anova", args.return=list(es="pes"))
+aov8090 <- aov.car(data=exp1_data8090, 
+                   Sensitivity~CoilPosition*Intensity+Error(PPT/(CoilPosition*Intensity)), 
+                   return="Anova", args.return=list(es="pes"))
 nice.anova(aov8090, es="pes")
 ```
 
@@ -127,7 +134,8 @@ We followed up with paired t-tests, which showed significant differences between
 exp1_data80 <- droplevels(subset(exp1_data8090, Intensity=="80"))
 exp1_ttest80 <- t.test(Sensitivity~CoilPosition, data=exp1_data80, paired=TRUE)
 # Compute effect size r using formula from DSUR (sqrt(t^2/(t^2+df)))
-paste('r =', sqrt(exp1_ttest80$statistic[[1]]^2/(exp1_ttest80$statistic[[1]]^2+exp1_ttest80$parameter[[1]])))
+paste('r =', 
+      sqrt(exp1_ttest80$statistic[[1]]^2/(exp1_ttest80$statistic[[1]]^2+exp1_ttest80$parameter[[1]])))
 # Cohen's d is another estimate of effect size. 
 cohen.d(data=exp1_data80, Sensitivity~CoilPosition)
 ```
@@ -138,7 +146,8 @@ cohen.d(data=exp1_data80, Sensitivity~CoilPosition)
 exp1_data90 <- droplevels(subset(exp1_data8090, Intensity=="90"))
 exp1_ttest90 <- t.test(Sensitivity~CoilPosition, data=exp1_data90, paired=TRUE)
 print(exp1_ttest90)
-paste('r =', sqrt(exp1_ttest90$statistic[[1]]^2/(exp1_ttest90$statistic[[1]]^2+exp1_ttest90$parameter[[1]])))
+paste('r =', 
+      sqrt(exp1_ttest90$statistic[[1]]^2/(exp1_ttest90$statistic[[1]]^2+exp1_ttest90$parameter[[1]])))
 cohen.d(data=exp1_data90, Sensitivity~CoilPosition)
 ```
 
@@ -151,7 +160,8 @@ exp1_ipsiNoTMSSens <- ddply(exp1_ipsiNoTMSSens, .(PPT, NoTMS, ip80, ip90), mutat
 exp1_ttestNoTMS <- t.test(exp1_ipsiNoTMSSens$NoTMS, exp1_ipsiNoTMSSens$ipMean, paired=TRUE)
 print(exp1_ttestNoTMS)
 # Compute effect size r
-paste('r =', sqrt(exp1_ttestNoTMS$statistic[[1]]^2/(exp1_ttestNoTMS$statistic[[1]]^2+exp1_ttestNoTMS$parameter[[1]])))
+paste('r =', 
+      sqrt(exp1_ttestNoTMS$statistic[[1]]^2/(exp1_ttestNoTMS$statistic[[1]]^2+exp1_ttestNoTMS$parameter[[1]])))
 # Cohen's d
 cohen.d(exp1_ipsiNoTMSSens$NoTMS, exp1_ipsiNoTMSSens$ipMean)
 ```
@@ -162,7 +172,8 @@ exp1_NoTMSAnd90 <- droplevels(subset(exp1_dataMean, Condition %in% c("90", "NoTM
 exp1_ttestNoTMSvs90 <- t.test(data=exp1_NoTMSAnd90, Sensitivity~Condition, paired=TRUE)
 print(exp1_ttestNoTMSvs90)
 # Effect size as r
-paste('r =', sqrt(exp1_ttestNoTMSvs90$statistic[[1]]^2/(exp1_ttestNoTMSvs90$statistic[[1]]^2+exp1_ttestNoTMSvs90$parameter[[1]])))
+paste('r =', 
+      sqrt(exp1_ttestNoTMSvs90$statistic[[1]]^2/(exp1_ttestNoTMSvs90$statistic[[1]]^2+exp1_ttestNoTMSvs90$parameter[[1]])))
 # Cohen's d
 exp1_NoTMSAnd90Wide <- cast(exp1_NoTMSAnd90, PPT~Condition, value='Sensitivity')
 cohen.d(exp1_NoTMSAnd90Wide$`90`, exp1_NoTMSAnd90Wide$NoTMS)
